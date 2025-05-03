@@ -16,6 +16,12 @@ typedef struct
     bool on_ground;
 } Player;
 
+typedef struct
+{
+    Vector2 position;
+    Vector2 size;
+} Stage;
+
 Player player_1 = {
     .position = {SCREENWIDTH / 4, SCREENHEIGHT * 0.8},
     .velocity = {125.0f, 0.0f},
@@ -32,11 +38,15 @@ Player player_2 = {
     .on_ground = true,
 };
 
+Stage stage = {
+    .position = {0, SCREENHEIGHT * 0.8},
+    .size = {SCREENWIDTH, SCREENHEIGHT * 0.2},
+};
+
 int main()
 {
     float gravity = 0.5f;
     float jump_power = -12.0f;
-    float ground_y = SCREENHEIGHT - player_1.size.y;
 
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
     SetTargetFPS(60);
@@ -86,16 +96,16 @@ int main()
 
         player_2.position.y += player_2.velocity.y;
 
-        if (player_1.position.y >= ground_y)
+        if (player_1.position.y + player_1.size.y >= stage.position.y)
         {
-            player_1.position.y = ground_y;
+            player_1.position.y = stage.position.y - player_1.size.y;
             player_1.velocity.y = 0;
             player_1.on_ground = true;
         }
 
-        if (player_2.position.y >= ground_y)
+        if (player_2.position.y + player_2.size.y >= stage.position.y)
         {
-            player_2.position.y = ground_y;
+            player_2.position.y = stage.position.y - player_2.size.y;
             player_2.velocity.y = 0;
             player_2.on_ground = true;
         }
@@ -125,6 +135,7 @@ int main()
 
         DrawRectangleV(player_1.position, player_1.size, GREEN);
         DrawRectangleV(player_2.position, player_2.size, RED);
+        DrawRectangleV(stage.position, stage.size, WHITE);
         EndDrawing();
     }
     CloseWindow();
