@@ -17,6 +17,7 @@ typedef struct
     Vector2 position;
     Vector2 velocity;
     Vector2 size;
+    float hp;
     float max_hp;
     bool active;
     bool on_ground;
@@ -29,17 +30,21 @@ typedef struct
 } Stage;
 
 Player player_1 = {
-    .position = {SCREENWIDTH / 4, SCREENHEIGHT * 0.8},
+    .position = {SCREENWIDTH * 0.25, SCREENHEIGHT * 0.8},
     .velocity = {125.0f, 0.0f},
     .size = {75, 150},
+    .hp = 100,
+    .max_hp = 100,
     .active = true,
     .on_ground = true,
 };
 
 Player player_2 = {
-    .position = {SCREENWIDTH * 0.75, SCREENHEIGHT * 0.8},
+    .position = {SCREENWIDTH * 0.75 - 75, SCREENHEIGHT * 0.8},
     .velocity = {125.0f, 0.0f},
     .size = {75, 150},
+    .hp = 100,
+    .max_hp = 100,
     .active = true,
     .on_ground = true,
 };
@@ -158,6 +163,25 @@ int main()
             DrawRectangleV(player_1.position, player_1.size, GREEN);
             DrawRectangleV(player_2.position, player_2.size, RED);
             DrawRectangleV(stage.position, stage.size, WHITE);
+
+            static const int hp_bar_rec_width = 300;
+            Rectangle hp_bar_1 = {
+                .x = 8,
+                .y = 8,
+                .width = (player_1.hp / player_1.max_hp) * hp_bar_rec_width,
+                .height = 32,
+            };
+
+            Rectangle hp_bar_2 = {
+                .x = 492,
+                .y = 8,
+                .width = (player_2.hp / player_2.max_hp) * hp_bar_rec_width,
+                .height = 32,
+            };
+            DrawRectangle(8, 8, 300, 32, DARKGRAY);
+            DrawRectangle(492, 8, 300, 32, DARKGRAY);
+            DrawRectangleRec(hp_bar_1, RED);
+            DrawRectangleRec(hp_bar_2, RED);
         }
         EndDrawing();
     }
