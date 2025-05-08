@@ -73,7 +73,7 @@ int main()
 
         switch (currentstate)
         {
-            case STARTMENU:
+        case STARTMENU:
             DrawText("2D Fighting Game", SCREENWIDTH / 2, SCREENHEIGHT / 2, 15, WHITE);
             DrawText("Start game press [SPACE]", SCREENWIDTH / 2, SCREENHEIGHT / 2 + 25, 10, WHITE);
 
@@ -83,7 +83,7 @@ int main()
             }
             break;
 
-            case GAME:
+        case GAME:
             // Player movements
             if (IsKeyDown(KEY_A))
             {
@@ -159,6 +159,27 @@ int main()
                 player_2.position.x = SCREENWIDTH - player_2.size.x;
             }
 
+            bool is_colliding = 
+            player_1.position.x < player_2.position.x + player_2.size.x &&
+            player_1.position.x + player_1.size.x > player_2.position.x;
+
+            if (is_colliding)
+            {
+                float overlap = 0.0f;
+
+                if (player_1.position.x < player_2.position.x)
+                {
+                    overlap = (player_1.position.x + player_1.size.x) - player_2.position.x;
+                    player_1.position.x -= overlap / 2;
+                    player_2.position.x += overlap / 2;
+                }
+                else
+                {
+                    overlap = (player_2.position.x + player_2.size.x) - player_1.position.x;
+                    player_1.position.x += overlap / 2;
+                    player_2.position.x -= overlap / 2;
+                }
+            }
 
             DrawRectangleV(player_1.position, player_1.size, GREEN);
             DrawRectangleV(player_2.position, player_2.size, RED);
