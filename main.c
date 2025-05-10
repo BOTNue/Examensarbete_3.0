@@ -19,6 +19,7 @@ typedef struct
     float duration;
     float timer;
     bool active;
+    bool has_hit;
 } Attack;
 
 typedef struct
@@ -26,8 +27,8 @@ typedef struct
     Vector2 position;
     Vector2 velocity;
     Vector2 size;
-    int hp;
-    int max_hp;
+    float hp;
+    float max_hp;
     Attack attack;
     bool on_ground;
     bool is_attacking;
@@ -45,8 +46,8 @@ Player player_1 = {
     .position = {SCREENWIDTH * 0.25, SCREENHEIGHT * 0.8},
     .velocity = {125.0f, 0.0f},
     .size = {75, 150},
-    .hp = 100,
-    .max_hp = 100,
+    .hp = 100.0f,
+    .max_hp = 100.0f,
     .on_ground = true,
     .is_attacking = false,
     .active = true,
@@ -57,8 +58,8 @@ Player player_2 = {
     .position = {SCREENWIDTH * 0.75 - 75, SCREENHEIGHT * 0.8},
     .velocity = {125.0f, 0.0f},
     .size = {75, 150},
-    .hp = 100,
-    .max_hp = 100,
+    .hp = 100.0f,
+    .max_hp = 100.0f,
     .on_ground = true,
     .is_attacking = false,
     .active = true,
@@ -81,6 +82,7 @@ void start_attack(Player *player)
     {
         player->is_attacking = true;
         player->attack.active = true;
+        player->attack.has_hit = false;
         player->attack.timer = 0.0f;
         player->attack.duration = 0.3f;
         player->attack.damage = 10;
@@ -121,13 +123,18 @@ void update_attack(Player *player, float delta_time)
 
 bool check_attack_hit(Player *attacker, Player *target)
 {
-    if (!attacker->attack.active)
+    if (!attacker->attack.active || attacker->attack.has_hit)
     {
         return false;
     }
     
     Rectangle targetbounds = get_player_bounds(target);
-    return CheckCollisionRecs(attacker->attack.hitbox, targetbounds);
+    if (CheckCollisionRecs(attacker->attack.hitbox, targetbounds))
+    {
+        attacker->attack.has_hit = true;
+        return true;
+    }
+    return false;
 }
 
 int main()
@@ -267,6 +274,7 @@ int main()
             if (check_attack_hit(&player_1, &player_2))
             {
                 player_2.hp -= 10;
+                printf("hit landed\n");
             }
 
             if (IsKeyPressed(KEY_M))
@@ -278,7 +286,7 @@ int main()
 
             if (check_attack_hit(&player_2, &player_1))
             {
-                player_1.hp -= 10;
+                player_1.hp -= player_2.attack.damage;
             }
 
             DrawRectangleV(player_1.position, player_1.size, GREEN);
