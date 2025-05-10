@@ -14,13 +14,25 @@ typedef enum
 
 typedef struct
 {
+    Rectangle hitbox;
+    int damage;
+    float duration;
+    float timer;
+    bool active;
+} Attack;
+
+typedef struct
+{
     Vector2 position;
     Vector2 velocity;
     Vector2 size;
-    float hp;
-    float max_hp;
-    bool active;
+    int hp;
+    int max_hp;
+    Attack attack;
     bool on_ground;
+    bool is_attacking;
+    bool active;
+    bool facing_right;
 } Player;
 
 typedef struct
@@ -35,8 +47,10 @@ Player player_1 = {
     .size = {75, 150},
     .hp = 100,
     .max_hp = 100,
-    .active = true,
     .on_ground = true,
+    .is_attacking = false,
+    .active = true,
+    .facing_right = true,
 };
 
 Player player_2 = {
@@ -45,14 +59,76 @@ Player player_2 = {
     .size = {75, 150},
     .hp = 100,
     .max_hp = 100,
-    .active = true,
     .on_ground = true,
+    .is_attacking = false,
+    .active = true,
+    .facing_right = false,
 };
 
 Stage stage = {
     .position = {0, SCREENHEIGHT * 0.8},
     .size = {SCREENWIDTH, SCREENHEIGHT * 0.2},
 };
+
+Rectangle get_player_bounds(Player *p)
+{
+    return (Rectangle) {p->position.x, p->position.y, p->size.x, p->size.y};
+}
+
+void start_attack(Player *player)
+{
+    if (!player->is_attacking)
+    {
+        player->is_attacking = true;
+        player->attack.active = true;
+        player->attack.timer = 0.0f;
+        player->attack.duration = 0.3f;
+        player->attack.damage = 10;
+        if (player->facing_right)
+        {   
+            player->attack.hitbox = (Rectangle){
+            player->position.x + player->size.x, 
+            player->position.y + 30,
+            20,
+            player->size.y * 0.2 
+            };
+        }
+        if (!player->facing_right)
+        {
+            player->attack.hitbox = (Rectangle){
+            player->position.x - 20, 
+            player->position.y + 30,
+            20,
+            player->size.y * 0.2 
+            };
+        }
+         
+    }
+}
+
+void update_attack(Player *player, float delta_time)
+{
+    if (player->attack.active)
+    {
+        player->attack.timer += delta_time;
+        if (player->attack.timer >= player->attack.duration)
+        {
+            player->attack.active = false;
+            player->is_attacking = false;
+        }
+    }
+}
+
+bool check_attack_hit(Player *attacker, Player *target)
+{
+    if (!attacker->attack.active)
+    {
+        return false;
+    }
+    
+    Rectangle targetbounds = get_player_bounds(target);
+    return CheckCollisionRecs(attacker->attack.hitbox, targetbounds);
+}
 
 int main()
 {
@@ -87,22 +163,22 @@ int main()
             // Player movements
             if (IsKeyDown(KEY_A))
             {
-                player_1.position.x -= player_1.velocity.x * GetFrameTime();
+                player_1.position.x -= player_1.velocity.x * delta_time;
             }
 
             if (IsKeyDown(KEY_D))
             {
-                player_1.position.x += player_1.velocity.x * GetFrameTime();
+                player_1.position.x += player_1.velocity.x * delta_time;
             }
 
             if (IsKeyDown(KEY_J))
             {
-                player_2.position.x -= player_2.velocity.x * GetFrameTime();
+                player_2.position.x -= player_2.velocity.x * delta_time;
             }
 
             if (IsKeyDown(KEY_L))
             {
-                player_2.position.x += player_2.velocity.x * GetFrameTime();
+                player_2.position.x += player_2.velocity.x * delta_time;
             }
 
             if (IsKeyPressed(KEY_W) && player_1.on_ground)
@@ -179,6 +255,30 @@ int main()
                     player_1.position.x += overlap / 2;
                     player_2.position.x -= overlap / 2;
                 }
+            }
+
+            if (IsKeyPressed(KEY_X))
+            {
+                start_attack(&player_1);
+            }
+
+            update_attack(&player_1, delta_time);
+
+            if (check_attack_hit(&player_1, &player_2))
+            {
+                player_2.hp -= 10;
+            }
+
+            if (IsKeyPressed(KEY_M))
+            {
+                start_attack(&player_2);
+            }
+
+            update_attack(&player_2, delta_time);
+
+            if (check_attack_hit(&player_2, &player_1))
+            {
+                player_1.hp -= 10;
             }
 
             DrawRectangleV(player_1.position, player_1.size, GREEN);
