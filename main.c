@@ -6,6 +6,8 @@
 #define SCREENWIDTH 800
 #define SCREENHEIGHT 600
 
+#define CHARACTER_SIZE 96
+
 typedef enum
 {
     STARTMENU,
@@ -94,6 +96,7 @@ void start_attack(Player *player)
             20,
             player->size.y * 0.2 
             };
+            DrawRectangleRec(player->attack.hitbox, WHITE);
         }
         if (!player->facing_right)
         {
@@ -143,10 +146,24 @@ int main()
     float jump_power = -12.0f;
 
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
-    SetTargetFPS(60);
+    
+
+    Texture2D player_idle = LoadTexture("Sprites/IDLE.png");
+    Texture2D player_run = LoadTexture("Sprites/RUN.png");
+    Texture2D player_hurt = LoadTexture("Sprites/HURT.png");
+    Texture2D player_attack = LoadTexture("Sprites/ATTACK 1.png");
+
+    Rectangle source = {0, 0, 96, 96};
+    Rectangle dest = {player_1.position.x, player_1.position.y, CHARACTER_SIZE * 4, CHARACTER_SIZE * 4};
+
+    int current_frame = 0;
+
+    int frame_counter = 0;
+    int frame_speed = 10;
 
     Game_state currentstate = STARTMENU;
 
+    SetTargetFPS(60);
     while (!WindowShouldClose())
     {
         float delta_time = GetFrameTime();
@@ -167,6 +184,19 @@ int main()
             break;
 
         case GAME:
+
+            frame_counter ++;
+
+            if (frame_counter >= (60/frame_speed))
+            {
+                frame_counter = 0;
+                current_frame ++;
+
+                if (current_frame > 9) current_frame = 0;
+
+                source.x = (float)current_frame*(float)CHARACTER_SIZE;
+            }
+
             // Player movements
             if (IsKeyDown(KEY_A))
             {
@@ -267,13 +297,14 @@ int main()
             if (IsKeyPressed(KEY_X))
             {
                 start_attack(&player_1);
+                printf("player_1 attacked\n");
             }
 
             update_attack(&player_1, delta_time);
 
             if (check_attack_hit(&player_1, &player_2))
             {
-                player_2.hp -= 10;
+                player_2.hp -= player_1.attack.damage;
                 printf("hit landed\n");
             }
 
@@ -289,9 +320,14 @@ int main()
                 player_1.hp -= player_2.attack.damage;
             }
 
-            DrawRectangleV(player_1.position, player_1.size, GREEN);
+            dest.x = player_1.position.x;
+            dest.y = player_1.position.y;
+
+            // DrawRectangleV(player_1.position, player_1.size, GREEN);
+            DrawTexturePro(player_idle, source, dest, (Vector2){dest.width/2.5, dest.height/2.2}, 0, WHITE);
             DrawRectangleV(player_2.position, player_2.size, RED);
             DrawRectangleV(stage.position, stage.size, WHITE);
+
 
             static const int hp_bar_rec_width = 300;
             Rectangle hp_bar_1 = {
