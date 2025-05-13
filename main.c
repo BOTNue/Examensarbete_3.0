@@ -89,14 +89,8 @@ Stage stage = {
     .size = {SCREENWIDTH, SCREENHEIGHT * 0.2},
 };
 
-Texture2D player_idle_texture;
-Texture2D player_run_texture;
-Texture2D player_attack_texture;
-
 Animation idle_ani;
-
 Animation run_ani;
-
 Animation attack_ani;
 
 Animator player_1_animator;
@@ -180,12 +174,12 @@ void update_animation(Animation *ani)
     }
 }
 
-void draw_animation(Animation *ani, Vector2 position)
+void draw_animation(Animation *ani, Vector2 position, bool flip)
 {
     Rectangle source = {
         .x = ani->frame_width * ani->current_frame,
         .y = 0,
-        .width = ani->frame_width,
+        .width = flip ? ani->frame_width : -ani->frame_width,
         .height = ani->frame_height,
     };
 
@@ -206,12 +200,6 @@ int main()
     float jump_power = -12.0f;
 
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
-    
-
-    // Texture2D player_idle = LoadTexture("Sprites/IDLE.png");
-    // Texture2D player_run = LoadTexture("Sprites/RUN.png");
-    Texture2D player_hurt = LoadTexture("Sprites/HURT.png");
-    // Texture2D player_attack = LoadTexture("Sprites/ATTACK 1.png");
     
     idle_ani = (Animation){
         .texture = LoadTexture("Sprites/IDLE.png"),
@@ -242,14 +230,6 @@ int main()
         .frame_speed = 15,
         .frame_counter = 0
     };
-
-    // Rectangle source = {0, 0, 96, 96};
-    // Rectangle dest = {player_1.position.x, player_1.position.y, CHARACTER_SIZE * 4, CHARACTER_SIZE * 4};
-
-    // int current_frame = 0;
-
-    // int frame_counter = 0;
-    // int frame_speed = 10;
 
     Game_state currentstate = STARTMENU;
 
@@ -428,10 +408,8 @@ int main()
 
             update_animation(player_1_animator.current_animation);
 
-            draw_animation(player_1_animator.current_animation, player_1.position);
+            draw_animation(player_1_animator.current_animation, player_1.position, player_1.facing_right);
 
-            // DrawRectangleV(player_1.position, player_1.size, GREEN);
-            // DrawTexturePro(player_idle, source, dest, (Vector2){dest.width/2.5, dest.height/2.2}, 0, WHITE);
             DrawRectangleV(player_2.position, player_2.size, RED);
             DrawRectangleV(stage.position, stage.size, WHITE);
 
