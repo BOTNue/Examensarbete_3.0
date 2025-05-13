@@ -26,6 +26,22 @@ typedef struct
 
 typedef struct
 {
+    Texture2D texture;
+    int frame_count;
+    int current_frame;
+    int frame_width;
+    int frame_height;
+    int frame_speed;
+    int frame_counter;
+} Animation;
+
+typedef struct
+{
+    Animation * current_animation;
+} Animator;
+
+typedef struct
+{
     Vector2 position;
     Vector2 velocity;
     Vector2 size;
@@ -73,6 +89,18 @@ Stage stage = {
     .size = {SCREENWIDTH, SCREENHEIGHT * 0.2},
 };
 
+Texture2D player_idle_texture;
+Texture2D player_run_texture;
+Texture2D player_attack_texture;
+
+Animation idle_ani;
+
+Animation run_ani;
+
+Animation attack_ani;
+
+Animator player_1_animator;
+
 Rectangle get_player_bounds(Player *p)
 {
     return (Rectangle) {p->position.x, p->position.y, p->size.x, p->size.y};
@@ -86,7 +114,7 @@ void start_attack(Player *player)
         player->attack.active = true;
         player->attack.has_hit = false;
         player->attack.timer = 0.0f;
-        player->attack.duration = 0.3f;
+        player->attack.duration = 0.4f;
         player->attack.damage = 10;
         if (player->facing_right)
         {   
@@ -107,7 +135,9 @@ void start_attack(Player *player)
             player->size.y * 0.2 
             };
         }
-         
+        player_1_animator.current_animation = &attack_ani;
+        player_1_animator.current_animation->current_frame = 0;
+        player_1_animator.current_animation->frame_counter = 0;
     }
 }
 
@@ -140,6 +170,36 @@ bool check_attack_hit(Player *attacker, Player *target)
     return false;
 }
 
+void update_animation(Animation *ani)
+{
+    ani->frame_counter++;
+    if (ani->frame_counter >= (60/ani->frame_speed))
+    {
+        ani->frame_counter = 0;
+        ani->current_frame = (ani->current_frame + 1) % ani->frame_count;
+    }
+}
+
+void draw_animation(Animation *ani, Vector2 position)
+{
+    Rectangle source = {
+        .x = ani->frame_width * ani->current_frame,
+        .y = 0,
+        .width = ani->frame_width,
+        .height = ani->frame_height,
+    };
+
+    Rectangle dest = {
+        .x = position.x,
+        .y = position.y,
+        .width = ani->frame_width * 4,
+        .height = ani->frame_height * 4,
+    };
+
+    Vector2 origin = {dest.width / 2.5, dest.height / 2.2};
+    DrawTexturePro(ani->texture, source, dest, origin, 0, WHITE);
+}
+
 int main()
 {
     float gravity = 0.5f;
@@ -148,18 +208,48 @@ int main()
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
     
 
-    Texture2D player_idle = LoadTexture("Sprites/IDLE.png");
-    Texture2D player_run = LoadTexture("Sprites/RUN.png");
+    // Texture2D player_idle = LoadTexture("Sprites/IDLE.png");
+    // Texture2D player_run = LoadTexture("Sprites/RUN.png");
     Texture2D player_hurt = LoadTexture("Sprites/HURT.png");
-    Texture2D player_attack = LoadTexture("Sprites/ATTACK 1.png");
+    // Texture2D player_attack = LoadTexture("Sprites/ATTACK 1.png");
+    
+    idle_ani = (Animation){
+        .texture = LoadTexture("Sprites/IDLE.png"),
+        .frame_count = 10,
+        .current_frame = 0,
+        .frame_width = 96,
+        .frame_height = 96,
+        .frame_speed = 10,
+        .frame_counter = 0,
+    };
 
-    Rectangle source = {0, 0, 96, 96};
-    Rectangle dest = {player_1.position.x, player_1.position.y, CHARACTER_SIZE * 4, CHARACTER_SIZE * 4};
+    run_ani = (Animation){
+        .texture = LoadTexture("Sprites/RUN.png"),
+        .frame_count = 16,
+        .current_frame = 0,
+        .frame_width = 96,
+        .frame_height = 96,
+        .frame_speed = 16,
+        .frame_counter = 0
+    };
 
-    int current_frame = 0;
+    attack_ani = (Animation){
+        .texture = LoadTexture("Sprites/ATTACK 1.png"),
+        .frame_count = 7,
+        .current_frame = 0,
+        .frame_width = 96,
+        .frame_height = 96,
+        .frame_speed = 15,
+        .frame_counter = 0
+    };
 
-    int frame_counter = 0;
-    int frame_speed = 10;
+    // Rectangle source = {0, 0, 96, 96};
+    // Rectangle dest = {player_1.position.x, player_1.position.y, CHARACTER_SIZE * 4, CHARACTER_SIZE * 4};
+
+    // int current_frame = 0;
+
+    // int frame_counter = 0;
+    // int frame_speed = 10;
 
     Game_state currentstate = STARTMENU;
 
@@ -185,17 +275,17 @@ int main()
 
         case GAME:
 
-            frame_counter ++;
+            // frame_counter ++;
 
-            if (frame_counter >= (60/frame_speed))
-            {
-                frame_counter = 0;
-                current_frame ++;
+            // if (frame_counter >= (60/frame_speed))
+            // {
+            //     frame_counter = 0;
+            //     current_frame ++;
 
-                if (current_frame > 9) current_frame = 0;
+            //     if (current_frame > 9) current_frame = 0;
 
-                source.x = (float)current_frame*(float)CHARACTER_SIZE;
-            }
+            //     source.x = (float)current_frame*(float)CHARACTER_SIZE;
+            // }
 
             // Player movements
             if (IsKeyDown(KEY_A))
@@ -320,11 +410,28 @@ int main()
                 player_1.hp -= player_2.attack.damage;
             }
 
-            dest.x = player_1.position.x;
-            dest.y = player_1.position.y;
+            // dest.x = player_1.position.x;
+            // dest.y = player_1.position.y;
+
+            if (player_1.is_attacking)
+            {
+                player_1_animator.current_animation = &attack_ani;
+            }
+            else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
+            {
+                player_1_animator.current_animation = &run_ani;
+            }
+            else
+            {
+                player_1_animator.current_animation = &idle_ani;
+            }
+
+            update_animation(player_1_animator.current_animation);
+
+            draw_animation(player_1_animator.current_animation, player_1.position);
 
             // DrawRectangleV(player_1.position, player_1.size, GREEN);
-            DrawTexturePro(player_idle, source, dest, (Vector2){dest.width/2.5, dest.height/2.2}, 0, WHITE);
+            // DrawTexturePro(player_idle, source, dest, (Vector2){dest.width/2.5, dest.height/2.2}, 0, WHITE);
             DrawRectangleV(player_2.position, player_2.size, RED);
             DrawRectangleV(stage.position, stage.size, WHITE);
 
