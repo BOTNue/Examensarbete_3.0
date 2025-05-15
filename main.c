@@ -11,6 +11,7 @@
 typedef enum
 {
     STARTMENU,
+    CONTROLS,
     GAME,
 } Game_state;
 
@@ -284,30 +285,54 @@ int main()
         switch (currentstate)
         {
         case STARTMENU:
-            DrawText("2D Fighting Game", SCREENWIDTH / 2, SCREENHEIGHT / 2, 15, WHITE);
-            DrawText("Start game press [SPACE]", SCREENWIDTH / 2, SCREENHEIGHT / 2 + 25, 10, WHITE);
+            DrawText("2D Fighting Game", SCREENWIDTH * 0.37, SCREENHEIGHT * 0.45, 25, WHITE);
+            DrawText("Start Game Press [SPACE]", SCREENWIDTH * 0.33, SCREENHEIGHT * 0.45 + 35, 20, WHITE);
+            DrawText("Show Controls Press [CTRL]", SCREENWIDTH * 0.32, SCREENHEIGHT * 0.45 + 70, 20, WHITE);
 
             if (IsKeyPressed(KEY_SPACE))
             {
                 currentstate = GAME;
             }
+            
+            if (IsKeyPressed(KEY_LEFT_CONTROL))
+            {
+                currentstate = CONTROLS;
+            }
+            break;
+        
+        case CONTROLS:
+            DrawText("PLAYER 1", SCREENWIDTH * 0.15, SCREENHEIGHT * 0.10, 25, WHITE);
+            DrawText("PLAYER 2", SCREENWIDTH * 0.70, SCREENHEIGHT * 0.10, 25, WHITE);
+
+            // Player 1
+            DrawText("Walk Right: [D]", SCREENWIDTH * 0.16, SCREENHEIGHT * 0.20, 15, WHITE);
+            DrawText("Walk Left: [A]", SCREENWIDTH * 0.16, SCREENHEIGHT * 0.25, 15, WHITE);
+            DrawText("Jump: [W]", SCREENWIDTH * 0.18, SCREENHEIGHT * 0.30, 15, WHITE);
+            DrawText("Attack: [X]", SCREENWIDTH * 0.17, SCREENHEIGHT * 0.35, 15, WHITE);
+
+
+            // Player 2
+            DrawText("Walk Right: [L]", SCREENWIDTH * 0.72, SCREENHEIGHT * 0.20, 15, WHITE);
+            DrawText("Walk Left: [J]", SCREENWIDTH * 0.72, SCREENHEIGHT * 0.25, 15, WHITE);
+            DrawText("Jump: [I]", SCREENWIDTH * 0.74, SCREENHEIGHT * 0.30, 15, WHITE);
+            DrawText("Attack: [M]", SCREENWIDTH * 0.73, SCREENHEIGHT * 0.35, 15, WHITE);
+
+            DrawText("Back To Main Menu", SCREENWIDTH * 0.34, SCREENHEIGHT / 2, 25, WHITE);
+            DrawText("Start Game [SPACE]", SCREENWIDTH * 0.34, SCREENHEIGHT * 0.60, 25, WHITE);
+
+            if (IsKeyPressed(KEY_BACKSPACE))
+            {
+                currentstate = STARTMENU;
+            }
+
+            if (IsKeyPressed(KEY_SPACE))
+            {
+                currentstate = GAME;
+            }
+
             break;
 
         case GAME:
-
-            // frame_counter ++;
-
-            // if (frame_counter >= (60/frame_speed))
-            // {
-            //     frame_counter = 0;
-            //     current_frame ++;
-
-            //     if (current_frame > 9) current_frame = 0;
-
-            //     source.x = (float)current_frame*(float)CHARACTER_SIZE;
-            // }
-
-            // Player movements
             if (IsKeyDown(KEY_A))
             {
                 player_1.position.x -= player_1.velocity.x * delta_time;
@@ -429,9 +454,6 @@ int main()
             {
                 player_1.hp -= player_2.attack.damage;
             }
-
-            // dest.x = player_1.position.x;
-            // dest.y = player_1.position.y;
 
             if (player_1.is_attacking)
             {
