@@ -89,11 +89,17 @@ Stage stage = {
     .size = {SCREENWIDTH, SCREENHEIGHT * 0.2},
 };
 
-Animation idle_ani;
-Animation run_ani;
-Animation attack_ani;
+Animation player_1_idle_ani;
+Animation player_1_run_ani;
+Animation player_1_attack_ani;
+
+Animation player_2_idle_ani;
+Animation player_2_run_ani;
+Animation player_2_attack_ani;
 
 Animator player_1_animator;
+
+Animator player_2_animator;
 
 Rectangle get_player_bounds(Player *p)
 {
@@ -129,9 +135,13 @@ void start_attack(Player *player)
             player->size.y * 0.2 
             };
         }
-        player_1_animator.current_animation = &attack_ani;
+        player_1_animator.current_animation = &player_1_attack_ani;
         player_1_animator.current_animation->current_frame = 0;
         player_1_animator.current_animation->frame_counter = 0;
+
+        player_2_animator.current_animation = &player_2_attack_ani;
+        player_2_animator.current_animation->current_frame = 0;
+        player_2_animator.current_animation->frame_counter = 0;
     }
 }
 
@@ -201,7 +211,7 @@ int main()
 
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
     
-    idle_ani = (Animation){
+    player_1_idle_ani = (Animation){
         .texture = LoadTexture("Sprites/IDLE.png"),
         .frame_count = 10,
         .current_frame = 0,
@@ -211,7 +221,7 @@ int main()
         .frame_counter = 0,
     };
 
-    run_ani = (Animation){
+    player_1_run_ani = (Animation){
         .texture = LoadTexture("Sprites/RUN.png"),
         .frame_count = 16,
         .current_frame = 0,
@@ -221,7 +231,37 @@ int main()
         .frame_counter = 0
     };
 
-    attack_ani = (Animation){
+    player_1_attack_ani = (Animation){
+        .texture = LoadTexture("Sprites/ATTACK 1.png"),
+        .frame_count = 7,
+        .current_frame = 0,
+        .frame_width = 96,
+        .frame_height = 96,
+        .frame_speed = 15,
+        .frame_counter = 0
+    };
+
+    player_2_idle_ani = (Animation){
+        .texture = LoadTexture("Sprites/IDLE.png"),
+        .frame_count = 10,
+        .current_frame = 0,
+        .frame_width = 96,
+        .frame_height = 96,
+        .frame_speed = 10,
+        .frame_counter = 0,
+    };
+
+    player_2_run_ani = (Animation){
+        .texture = LoadTexture("Sprites/RUN.png"),
+        .frame_count = 16,
+        .current_frame = 0,
+        .frame_width = 96,
+        .frame_height = 96,
+        .frame_speed = 16,
+        .frame_counter = 0
+    };
+
+    player_2_attack_ani = (Animation){
         .texture = LoadTexture("Sprites/ATTACK 1.png"),
         .frame_count = 7,
         .current_frame = 0,
@@ -395,22 +435,36 @@ int main()
 
             if (player_1.is_attacking)
             {
-                player_1_animator.current_animation = &attack_ani;
+                player_1_animator.current_animation = &player_1_attack_ani;
             }
             else if (IsKeyDown(KEY_A) || IsKeyDown(KEY_D))
             {
-                player_1_animator.current_animation = &run_ani;
+                player_1_animator.current_animation = &player_1_run_ani;
             }
             else
             {
-                player_1_animator.current_animation = &idle_ani;
+                player_1_animator.current_animation = &player_1_idle_ani;
+            }
+
+            if (player_2.is_attacking)
+            {
+                player_2_animator.current_animation = &player_2_attack_ani;
+            }
+            else if (IsKeyDown(KEY_J) || IsKeyDown(KEY_L))
+            {
+                player_2_animator.current_animation = &player_2_run_ani;
+            }
+            else
+            {
+                player_2_animator.current_animation = &player_2_idle_ani;
             }
 
             update_animation(player_1_animator.current_animation);
+            update_animation(player_2_animator.current_animation);
 
             draw_animation(player_1_animator.current_animation, player_1.position, player_1.facing_right);
+            draw_animation(player_2_animator.current_animation, player_2.position, player_2.facing_right);
 
-            DrawRectangleV(player_2.position, player_2.size, RED);
             DrawRectangleV(stage.position, stage.size, WHITE);
 
 
