@@ -122,18 +122,17 @@ void start_attack(Player *player)
         if (player->facing_right)
         {   
             player->attack.hitbox = (Rectangle){
-            player->position.x + player->size.x, 
-            player->position.y + 30,
+            player->position.x + player->size.x + 100, 
+            player->position.y + 70,
             20,
             player->size.y * 0.2 
             };
-            DrawRectangleRec(player->attack.hitbox, WHITE);
         }
         if (!player->facing_right)
         {
             player->attack.hitbox = (Rectangle){
-            player->position.x - 20, 
-            player->position.y + 30,
+            player->position.x - 115, 
+            player->position.y + 70,
             20,
             player->size.y * 0.2 
             };
