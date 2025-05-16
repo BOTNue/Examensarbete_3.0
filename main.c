@@ -109,6 +109,7 @@ Rectangle get_player_bounds(Player *p)
     return (Rectangle) {p->position.x, p->position.y, p->size.x, p->size.y};
 }
 
+/* Allows player to attack and damage each other */
 void start_attack(Player *player)
 {
     if (!player->is_attacking)
@@ -119,6 +120,8 @@ void start_attack(Player *player)
         player->attack.timer = 0.0f;
         player->attack.duration = 0.4f;
         player->attack.damage = 10;
+
+        // Attack hitbox chnages position depending on the facing direction
         if (player->facing_right)
         {   
             player->attack.hitbox = (Rectangle){
@@ -137,6 +140,8 @@ void start_attack(Player *player)
             player->size.y * 0.2 
             };
         }
+
+        // Reset sprite attack animation
         player_1_animator.current_animation = &player_1_attack_ani;
         player_1_animator.current_animation->current_frame = 0;
         player_1_animator.current_animation->frame_counter = 0;
@@ -147,6 +152,7 @@ void start_attack(Player *player)
     }
 }
 
+/* Update player attack so player can attack again */
 void update_attack(Player *player, float delta_time)
 {
     if (player->attack.active)
@@ -160,6 +166,7 @@ void update_attack(Player *player, float delta_time)
     }
 }
 
+/* Checks for player collision with attack */
 bool check_attack_hit(Player *attacker, Player *target)
 {
     if (!attacker->attack.active || attacker->attack.has_hit)
@@ -170,12 +177,13 @@ bool check_attack_hit(Player *attacker, Player *target)
     Rectangle targetbounds = get_player_bounds(target);
     if (CheckCollisionRecs(attacker->attack.hitbox, targetbounds))
     {
-        attacker->attack.has_hit = true;
+        attacker->attack.has_hit = true; // Makes sure player attack only hits once
         return true;
     }
     return false;
 }
 
+/* Player sprite animation plays to farmes*/
 void update_animation(Animation *ani)
 {
     ani->frame_counter++;
@@ -186,6 +194,7 @@ void update_animation(Animation *ani)
     }
 }
 
+/* Draws player sprite */
 void draw_animation(Animation *ani, Vector2 position, bool flip)
 {
     Rectangle source = {
@@ -207,7 +216,7 @@ void draw_animation(Animation *ani, Vector2 position, bool flip)
 }
 
 
-
+/* resets player stats if play again is picked */
 void reset_player()
 {
     player_1.hp = 100;
@@ -217,11 +226,11 @@ void reset_player()
     player_2.position = player_2_start;
 }
 
+/* Main loop */
 int main()
 {
     float gravity = 0.5f;
     float jump_power = -12.0f;
-    int winner;
 
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
     
@@ -346,6 +355,7 @@ int main()
             break;
 
         case GAME:
+            // Player movements
             if (IsKeyDown(KEY_A))
             {
                 player_1.position.x -= player_1.velocity.x * delta_time;
@@ -378,6 +388,7 @@ int main()
                 player_2.on_ground = false;
             }
 
+            // Affect player with gravity
             player_1.velocity.y += gravity;
 
             player_1.position.y += player_1.velocity.y;
@@ -386,6 +397,7 @@ int main()
 
             player_2.position.y += player_2.velocity.y;
 
+            // Border collisions
             if (player_1.position.y + player_1.size.y >= stage.position.y)
             {
                 player_1.position.y = stage.position.y - player_1.size.y;
@@ -420,6 +432,7 @@ int main()
                 player_2.position.x = SCREENWIDTH - player_2.size.x;
             }
 
+            // Player collision
             bool is_colliding = 
             player_1.position.x < player_2.position.x + player_2.size.x &&
             player_1.position.x + player_1.size.x > player_2.position.x;
@@ -442,6 +455,7 @@ int main()
                 }
             }
 
+            // Player attacks
             if (IsKeyPressed(KEY_X))
             {
                 start_attack(&player_1);
@@ -468,6 +482,7 @@ int main()
                 player_1.hp -= player_2.attack.damage;
             }
 
+            // Player sprite animations
             if (player_1.is_attacking)
             {
                 player_1_animator.current_animation = &player_1_attack_ani;
@@ -500,9 +515,10 @@ int main()
             draw_animation(player_1_animator.current_animation, player_1.position, player_1.facing_right);
             draw_animation(player_2_animator.current_animation, player_2.position, player_2.facing_right);
 
+            // Draw stage players are on
             DrawRectangleV(stage.position, stage.size, WHITE);
 
-
+            // Players health bar
             static const int hp_bar_rec_width = 300;
             Rectangle hp_bar_1 = {
                 .x = 8,
