@@ -6,13 +6,12 @@
 #define SCREENWIDTH 800
 #define SCREENHEIGHT 600
 
-#define CHARACTER_SIZE 96
-
 typedef enum
 {
-    STARTMENU,
+    MAINMENU,
     CONTROLS,
     GAME,
+    ENDING,
 } Game_state;
 
 typedef struct
@@ -60,6 +59,9 @@ typedef struct
     Vector2 position;
     Vector2 size;
 } Stage;
+
+Vector2 player_1_start = {SCREENWIDTH * 0.25, SCREENHEIGHT * 0.8};
+Vector2 player_2_start = {SCREENWIDTH * 0.75 - 75, SCREENHEIGHT * 0.8};
 
 Player player_1 = {
     .position = {SCREENWIDTH * 0.25, SCREENHEIGHT * 0.8},
@@ -205,10 +207,22 @@ void draw_animation(Animation *ani, Vector2 position, bool flip)
     DrawTexturePro(ani->texture, source, dest, origin, 0, WHITE);
 }
 
+
+
+void reset_player()
+{
+    player_1.hp = 100;
+    player_2.hp = 100;
+    
+    player_1.position = player_1_start;
+    player_2.position = player_2_start;
+}
+
 int main()
 {
     float gravity = 0.5f;
     float jump_power = -12.0f;
+    int winner;
 
     InitWindow(SCREENWIDTH, SCREENHEIGHT, "2D fighting game");
     
@@ -272,7 +286,7 @@ int main()
         .frame_counter = 0
     };
 
-    Game_state currentstate = STARTMENU;
+    Game_state currentstate = MAINMENU;
 
     SetTargetFPS(60);
     while (!WindowShouldClose())
@@ -284,7 +298,7 @@ int main()
 
         switch (currentstate)
         {
-        case STARTMENU:
+        case MAINMENU:
             DrawText("2D Fighting Game", SCREENWIDTH * 0.37, SCREENHEIGHT * 0.45, 25, WHITE);
             DrawText("Start Game Press [SPACE]", SCREENWIDTH * 0.33, SCREENHEIGHT * 0.45 + 35, 20, WHITE);
             DrawText("Show Controls Press [CTRL]", SCREENWIDTH * 0.32, SCREENHEIGHT * 0.45 + 70, 20, WHITE);
@@ -301,8 +315,8 @@ int main()
             break;
         
         case CONTROLS:
-            DrawText("PLAYER 1", SCREENWIDTH * 0.15, SCREENHEIGHT * 0.10, 25, WHITE);
-            DrawText("PLAYER 2", SCREENWIDTH * 0.70, SCREENHEIGHT * 0.10, 25, WHITE);
+            DrawText("Player 1", SCREENWIDTH * 0.15, SCREENHEIGHT * 0.10, 25, WHITE);
+            DrawText("Player 2", SCREENWIDTH * 0.70, SCREENHEIGHT * 0.10, 25, WHITE);
 
             // Player 1
             DrawText("Walk Right: [D]", SCREENWIDTH * 0.16, SCREENHEIGHT * 0.20, 15, WHITE);
@@ -317,12 +331,12 @@ int main()
             DrawText("Jump: [I]", SCREENWIDTH * 0.74, SCREENHEIGHT * 0.30, 15, WHITE);
             DrawText("Attack: [M]", SCREENWIDTH * 0.73, SCREENHEIGHT * 0.35, 15, WHITE);
 
-            DrawText("Back To Main Menu", SCREENWIDTH * 0.34, SCREENHEIGHT / 2, 25, WHITE);
+            DrawText("Back To Main Menu [ENTER]", SCREENWIDTH * 0.28, SCREENHEIGHT / 2, 25, WHITE);
             DrawText("Start Game [SPACE]", SCREENWIDTH * 0.34, SCREENHEIGHT * 0.60, 25, WHITE);
 
-            if (IsKeyPressed(KEY_BACKSPACE))
+            if (IsKeyPressed(KEY_ENTER))
             {
-                currentstate = STARTMENU;
+                currentstate = MAINMENU;
             }
 
             if (IsKeyPressed(KEY_SPACE))
@@ -508,6 +522,38 @@ int main()
             DrawRectangle(492, 8, 300, 32, DARKGRAY);
             DrawRectangleRec(hp_bar_1, RED);
             DrawRectangleRec(hp_bar_2, RED);
+
+            if (player_1.hp <= 0 || player_2.hp <= 0)
+            {
+                currentstate = ENDING;
+            }
+            
+            break;
+
+        case ENDING:
+
+            if (player_1.hp <= 0)
+            {
+                DrawText("Player 2 Wins", SCREENWIDTH * 0.37, SCREENHEIGHT * 0.30, 30, WHITE);
+            }
+            else
+            {
+                DrawText("Player 1 Wins", SCREENWIDTH * 0.37, SCREENHEIGHT * 0.30, 30, WHITE);
+            }
+
+            DrawText("Return To Main Menu [ENTER]", SCREENWIDTH * 0.22, SCREENHEIGHT * 0.50, 30, WHITE);
+            DrawText("Play Again [SPACE]", SCREENWIDTH * 0.33, SCREENHEIGHT * 0.60, 30, WHITE);
+
+            if (IsKeyPressed(KEY_ENTER))
+            {
+                currentstate = MAINMENU;
+            }
+
+            if (IsKeyPressed(KEY_SPACE))
+            {
+                currentstate = GAME;
+                reset_player(); 
+            }
         }
         EndDrawing();
     }
