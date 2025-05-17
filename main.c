@@ -65,7 +65,7 @@ Vector2 player_2_start = {SCREENWIDTH * 0.75 - 75, SCREENHEIGHT * 0.8};
 
 Player player_1 = {
     .position = {SCREENWIDTH * 0.25, SCREENHEIGHT * 0.8},
-    .velocity = {125.0f, 0.0f},
+    .velocity = {175.0f, 0.0f},
     .size = {75, 150},
     .hp = 100.0f,
     .max_hp = 100.0f,
@@ -77,7 +77,7 @@ Player player_1 = {
 
 Player player_2 = {
     .position = {SCREENWIDTH * 0.75 - 75, SCREENHEIGHT * 0.8},
-    .velocity = {125.0f, 0.0f},
+    .velocity = {175.0f, 0.0f},
     .size = {75, 150},
     .hp = 100.0f,
     .max_hp = 100.0f,
