@@ -125,18 +125,18 @@ void start_attack(Player *player)
         if (player->facing_right)
         {   
             player->attack.hitbox = (Rectangle){
-            player->position.x + player->size.x + 100, 
+            player->position.x + player->size.x, 
             player->position.y + 70,
-            20,
+            130,
             player->size.y * 0.2 
             };
         }
         if (!player->facing_right)
         {
             player->attack.hitbox = (Rectangle){
-            player->position.x - 115, 
+            player->position.x - 125, 
             player->position.y + 70,
-            20,
+            125,
             player->size.y * 0.2 
             };
         }
@@ -314,6 +314,7 @@ int main()
             if (IsKeyPressed(KEY_SPACE))
             {
                 currentstate = GAME;
+                reset_player();
             }
             
             if (IsKeyPressed(KEY_LEFT_CONTROL))
@@ -350,6 +351,7 @@ int main()
             if (IsKeyPressed(KEY_SPACE))
             {
                 currentstate = GAME;
+                reset_player();
             }
 
             break;
